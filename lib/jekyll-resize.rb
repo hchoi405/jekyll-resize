@@ -73,7 +73,7 @@ module Jekyll
         site.static_files << Jekyll::StaticFile.new(site, site.source, CACHE_DIR, dest_filename)
       end
 
-      File.join(site.baseurl, dest_path_rel)
+      File.join(site.baseurl || "/", dest_path_rel)
     end
   end
 end
