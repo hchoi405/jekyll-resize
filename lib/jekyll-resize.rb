@@ -3,7 +3,6 @@ require "mini_magick"
 
 module Jekyll
   module Resize
-    CACHE_DIR = "cache/resize/"
     HASH_LENGTH = 32
 
     # Generate output image filename.
@@ -17,16 +16,16 @@ module Jekyll
     end
 
     # Build the path strings.
-    def _paths(repo_base, img_path, options)
+    def _paths(repo_base, img_path, options, cache_dir)
       src_path = File.join(repo_base, img_path)
       raise "Image at #{src_path} is not readable" unless File.readable?(src_path)
 
-      dest_dir = File.join(repo_base, CACHE_DIR)
+      dest_dir = File.join(repo_base, cache_dir)
 
       dest_filename = _dest_filename(src_path, options, dest_dir)
 
       dest_path = File.join(dest_dir, dest_filename)
-      dest_path_rel = File.join(CACHE_DIR, dest_filename)
+      dest_path_rel = File.join(cache_dir, dest_filename)
 
       return src_path, dest_path, dest_dir, dest_filename, dest_path_rel
     end
@@ -60,8 +59,9 @@ module Jekyll
       raise "`options` may not be empty" unless options.length > 0
 
       site = @context.registers[:site]
+      cache_dir = site.config['resize_cache_dir'] || 'figs/cache/'
 
-      src_path, dest_path, dest_dir, dest_filename, dest_path_rel = _paths(site.source, source, options)
+      src_path, dest_path, dest_dir, dest_filename, dest_path_rel = _paths(site.source, source, options, cache_dir)
 
       FileUtils.mkdir_p(dest_dir)
 
@@ -70,7 +70,7 @@ module Jekyll
 
         _process_img(src_path, options, dest_path)
 
-        site.static_files << Jekyll::StaticFile.new(site, site.source, CACHE_DIR, dest_filename)
+        site.static_files << Jekyll::StaticFile.new(site, site.source, cache_dir, dest_filename)
       end
 
       File.join(site.baseurl || "", dest_path_rel)
